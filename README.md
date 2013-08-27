@@ -7,14 +7,11 @@
 This plugin is modified version of two plugins: [grunt-contrib-qunit][] and [grunt-lib-phantomjs][].
 Here's reasoning why it was forked and modified.
 Original grunt-contrib-qunit creates the following dependencies tree:
-* grunt-contrib-qunit
-** -> grunt-lib-phantomjs
-*** -> phantomjs npm module
-**** -> PhantomJS
+* grunt-contrib-qunit -> grunt-lib-phantomjs -> phantomjs npm module -> PhantomJS
 
 This works great when you install [grunt-contrib-qunit][] from official npm registry. All dependencies downloaded and installed automatically.
 But [phantomjs npm module][] has very specific feature: on installation after [PhantomJS][] downloading it hardcodes absolute path to its executable.
-Such bahavior makes it imposiible to share node_modules folder betweeb machines. 
+Such bahavior makes it impossible to share node_modules folder between machines. 
 Consequently, it's impossible to keep node_modules in VCS (Git/Subversion).
 
 That's because this plugin was created. It does not depend on [grunt-lib-phantomjs][] nor [phantomjs npm module][].
@@ -64,10 +61,11 @@ Also note that running grunt with the `--debug` flag will output a lot of Phanto
 ### Options
 
 #### phantomPath
-Type: `String`
-Default: (none)
+Type: `String`  
+Default: (none)  
 Required: yes
 
+The path to PhantomJS executable. It can be absolute or relative to the current working directory (by default it's folder where Gruntfile.js lives).  
 
 #### timeout
 Type: `Number`  
