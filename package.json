@@ -1,0 +1,48 @@
+{
+  "name": "grunt-croc-qunit",
+  "description": "Run QUnit unit tests in a headless PhantomJS instance. It's modified version of plugins: grunt-contrib-qunit and grunt-lib-phantomjs",
+  "version": "0.1.0",
+  "homepage": "https://github.com/CrocInc/grunt-croc-qunit",
+  "author": {
+    "name": "Sergei Dorogin",
+    "url": "https://github.com/evil-shrike"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/CrocInc/grunt-croc-qunit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CrocInc/grunt-croc-qunit/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/CrocInc/grunt-croc-qunit/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "dependencies": {
+    "eventemitter2": "~0.4.9",
+    "semver": "~1.0.14",
+    "temporary": "~0.0.4"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-connect": "~0.3.0",
+    "difflet": "~0.2.3",
+    "phantomjs": "~1.9.0-1"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.0"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
+}
