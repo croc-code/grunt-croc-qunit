@@ -1,7 +1,7 @@
 {
   "name": "grunt-croc-qunit",
-  "description": "Run QUnit unit tests in a headless PhantomJS instance. It's modified version of plugins: grunt-contrib-qunit and grunt-lib-phantomjs",
-  "version": "0.1.0",
+  "description": "Run QUnit unit tests in a headless PhantomJS instance. It's modified version of grunt-contrib-qunit and grunt-lib-phantomjs plugins without direct dependency on phantomjs module",
+  "version": "0.1.1",
   "homepage": "https://github.com/CrocInc/grunt-croc-qunit",
   "author": {
     "name": "Sergei Dorogin",
@@ -43,6 +43,6 @@
     "grunt": "~0.4.0"
   },
   "keywords": [
-    "gruntplugin"
+    "gruntplugin", "qunit", "grunt", "phantomjs", "CROC"
   ]
 }
