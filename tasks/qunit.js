@@ -93,6 +93,7 @@ module.exports = function(grunt) {
   });
 
   phantomjs.on('qunit.done', function(failed, passed, total, duration) {
+    grunt.verbose.writeln('QUnit tests done (' + duration + 'ms)');
     phantomjs.halt();
     status.failed += failed;
     status.passed += passed;
@@ -143,13 +144,26 @@ module.exports = function(grunt) {
       inject: asset('phantomjs/bridge.js'),
       // Explicit non-file URLs to test.
       urls: [],
-    });
+      // Custom phantomjs' events handlers (e.g. for extracting coverage reports)
+      eventHandlers: {}
+    }),
+    // This task is asynchronous.
+    done = this.async(),
+    disposables = [];
+
+    if (options.eventHandlers) {
+      Object.keys(options.eventHandlers).forEach(function (eventName) {
+        var handler = options.eventHandlers[eventName];
+        if (handler) {
+          phantomjs.on(eventName, handler);
+          // see teardown section below in done callback
+          disposables.push([eventName, handler]);
+        }
+      });
+    }
 
     // Combine any specified URLs with src files.
     var urls = options.urls.concat(this.filesSrc);
-
-    // This task is asynchronous.
-    var done = this.async();
 
     // Reset status.
     status = {failed: 0, passed: 0, total: 0, duration: 0};
@@ -190,6 +204,12 @@ module.exports = function(grunt) {
       } else {
         grunt.verbose.writeln();
         grunt.log.ok(status.total + ' assertions passed (' + status.duration + 'ms)');
+      }
+      // teardown: remove events handlers
+      if (disposables.length) {
+        disposables.forEach(function (item) {
+          phantomjs.off(item[0], item[1]);
+        })
       }
       // All done!
       done();

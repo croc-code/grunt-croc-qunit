@@ -221,4 +221,5 @@ grunt.event.on('qunit.spawn', function (url) {
 
 ## Release History
 
+ * 2013-08-28	v0.1.2	Added 'eventHandlers' option for passing phantomjs' events handlers
  * 2013-08-27	v0.1.0	Forked from grunt-contrib-qunit and grunt-lib-phantomjs and modified - first working version

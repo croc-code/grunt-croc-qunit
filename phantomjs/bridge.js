@@ -50,6 +50,10 @@
   });
 
   QUnit.done(function(obj) {
+    // send coverage data if available
+    if (window.__coverage__) {
+      sendMessage('qunit.coverage', window.__coverage__);
+    }
     sendMessage('qunit.done', obj.failed, obj.passed, obj.total, obj.runtime);
   });
 }());
