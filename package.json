@@ -25,7 +25,7 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt"
   },
   "dependencies": {
     "eventemitter2": "~0.4.9",
