@@ -155,6 +155,7 @@ module.exports = function(grunt) {
       Object.keys(options.eventHandlers).forEach(function (eventName) {
         var handler = options.eventHandlers[eventName];
         if (handler) {
+          grunt.verbose.writeln('Add custom handler for phantomjs "' + eventName + '" event');
           phantomjs.on(eventName, handler);
           // see teardown section below in done callback
           disposables.push([eventName, handler]);
