@@ -11,8 +11,8 @@ Original grunt-contrib-qunit creates the following dependencies tree:
 
 This works great when you install [grunt-contrib-qunit][] from official npm registry. All dependencies downloaded and installed automatically.
 But [phantomjs npm module][] has very specific feature: on installation after [PhantomJS][] downloading it hardcodes absolute path to its executable.
-Such bahavior makes it impossible to share node_modules folder between machines. 
-Consequently, it's impossible to keep node_modules in VCS (Git/Subversion).
+Such bahavior makes it impossible to share `node_modules` folder between machines. 
+Consequently, it's impossible to keep `node_modules` in VCS (Git/Subversion).
 
 That's because this plugin was created. It does not depend on [grunt-lib-phantomjs][] nor [phantomjs npm module][].
 It expects that you will install [PhantomJS][] on your own and supply path to its executable in task's options.
@@ -22,10 +22,12 @@ It expects that you will install [PhantomJS][] on your own and supply path to it
 [phantomjs npm module]: https://github.com/Obvious/phantomjs
 [PhantomJS]: http://www.phantomjs.org/
 
-Also there are other distinctions from original grunt-contrib-qunit:
-* bridge.js script was modified to remove excess processing of QUnit.equal's arguments (see https://github.com/gruntjs/grunt-contrib-qunit/issues/44)
+Also there are other distinctions from original grunt-contrib-qunit:  
 
-
+-  `bridge.js` script was modified to remove excess processing of QUnit.equal's arguments (see https://github.com/gruntjs/grunt-contrib-qunit/issues/44)  
+-  `bridge.js` reports code coverage info from `window.__coverage__` as phantomjs' `qunit.coverage` event on test completion
+-  added `eventHandlers` option for qunit task 
+ 
 ## Getting Started
 This plugin requires Grunt `~0.4.0`
 
@@ -52,7 +54,7 @@ Task targets, files and options may be specified according to the grunt [Configu
 
 Please note that this plugin doesn't download and install [PhantomJS][].
 
-For running qunit-tests you'll need to manually install PhantomJS first into some reachable place. You can use [phantomjs npm module][] for this.
+For running qunit tests you'll need to manually install PhantomJS first into some reachable place. You can use [phantomjs npm module][] for this.
 
 [PhantomJS]: http://www.phantomjs.org/
 [phantomjs npm module]: https://github.com/Obvious/phantomjs
@@ -67,6 +69,13 @@ Required: yes
 
 The path to PhantomJS executable. It can be absolute or relative to the current working directory (by default it's folder where Gruntfile.js lives).  
 
+#### eventHandlers
+Type: `Object`  
+Default: (none)
+
+An object map where keys are event names and values are event handlers.
+
+ 
 #### timeout
 Type: `Number`  
 Default: `5000`
@@ -97,7 +106,7 @@ Additional `--` style arguments that need to be passed in to PhantomJS may be sp
 #### Wildcards
 In this example, `grunt qunit:all` will test all `.html` files in the test directory _and all subdirectories_. First, the wildcard is expanded to match each individual file. Then, each matched filename is passed to [PhantomJS][] (one at a time).
 
-```js
+```javascript  
 // Project configuration.
 grunt.initConfig({
   qunit: {
@@ -194,7 +203,7 @@ grunt.initConfig({
 ```
 
 #### Events and reporting
-[QUnit callback](http://api.qunitjs.com/category/callbacks/) methods and arguments are also emitted through grunt's event system so that you may build custom reporting tools. Please refer to to the QUnit documentation for more information.
+[QUnit callback](http://api.qunitjs.com/category/callbacks/) methods and arguments are also emitted through grunt's event system so that you may build custom reporting tools. Please refer to the QUnit documentation for more information.
 
 The events (with arguments) are as follows:
 
@@ -205,6 +214,7 @@ The events (with arguments) are as follows:
 * `qunit.testDone`: name, failed, passed, total
 * `qunit.moduleDone`: name, failed, passed, total
 * `qunit.done`: failed, passed, total, runtime
+* `qunit.coverage`: coverage
 
 In addition to QUnit callback-named events, the following event is emitted when [PhantomJS][] is spawned for a test:
 
@@ -218,8 +228,144 @@ grunt.event.on('qunit.spawn', function (url) {
 });
 ```
 
+Additionally you can supply an object in `eventHandlers` task's option.   
+```js
+	qunit:{
+		options: {
+			'phantomPath': '../../Tools/phantomjs/phantomjs.exe'
+		},
+		test: {
+			options: {
+				eventHandlers: {
+					'qunit.coverage': function (coverage) {
+						grunt.file.write('.tmp/coverage.json', JSON.stringify(coverage));
+					}
+				},
+			    urls: ['http://127.0.0.1:9002/tests-runner.html']
+			}
+		}
+	}
+```
+
+The event `qunit.coverage` allows using [Istanbul][] code coverage library. See next chapter.
+
+[Istanbul]: https://github.com/gotwarlost/istanbul/
+
+
+
+## Istanbul tasks (coverageInstrument, coverageReport)
+
+When you have loaded the plugin (via `grunt.loadNpmTasks`) you have some tasks available besides `qunit`. These tasks are for creating code coverage reports using [Istanbul][]:  
+
+- coverageInstrument
+- coverageReport
+
+[Istanbul]: https://github.com/gotwarlost/istanbul/
+
+The plugin doesn't depend on Istanbul module directly. So it doesn't add additional dependency into your project if we arn't going to use code coverage with Istanbul.
+If you decided to use Istanbul for code coverage you will need to install Istanbul:
+`npm install istanbul --save-dev`.
+
+### `coverageInstrument` task
+
+Task targets, files and options may be specified according to the grunt [Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
+Task's `src` specifies what files will be instrumented. Task's parameters should describe a set of `*.js` files. Task's `dest` specified where instrumented files will be saved (some kind of temporary folder). These instrumented files should be used during tests execution.
+ 
+#### src
+Type: `String`  
+Required: yes
+
+`*.js` files to instrument
+
+#### dest
+Type: `String`  
+Required: yes
+
+The folder where instrumented files will be saved.
+
+### `coverageReport` task
+#### coverageFile
+Type: `String`    
+Default: (none)    
+Required: yes  
+
+The file path to `coverage.json` file with coverage info saved after tests completion. To create this file you can use `qunit.coverage` event. See example below.
+
+#### reports
+Type: `Object`    
+Required: no  
+
+An object to specify what reports should be generated. The object's key can be any report name which Istanbul supports (`html`, `lcov`, `text`; see the [doc](https://github.com/gotwarlost/istanbul/#the-report-command) for details). The key's value should be path to a folder where the report will be created.
+
+
+### Usage example
+
+It doesn't make much sence to run tasks `coverageInstrument` and `coverageReport` individually. Instead they are designed to be run in a pipeline with `qunit` task: 
+
+```js
+	grunt.initConfig({
+		qunit:{
+			options: {
+				'phantomPath': '../../Tools/phantomjs/phantomjs.exe'
+			},
+			test: {
+				options: {
+					eventHandlers: {
+						// NOTE: we're saving coverage info into filepath specified in coverageReport.options.coverageFile beloww
+						'qunit.coverage': function (coverage) {
+							grunt.file.write('.tmp/coverage.json', JSON.stringify(coverage));
+						}
+					},
+				    // url which `connect` server will be serve
+				    urls: ['http://127.0.0.1:9002/tests-runner.html']
+				}
+			}
+		},
+		connect: {
+			testcoverage: {
+				options: {
+					port: 9002,
+					hostname: '127.0.0.1',
+					middleware: function (connect) {
+						return [
+						// instrumented sources first
+						mountFolder(connect, '.tmp'),
+						// then the rest of sources
+						mountFolder(connect, 'src'),
+						// then test fixtures and helpers
+						mountFolder(connect, 'tests')
+						];
+					}
+				}
+			}
+		},
+		coverageInstrument: {
+			test: {
+				// NOTE: we instrument only subset of our sources ('lib')
+				src: 'client/lib/**/*.js',
+				expand: true,
+				cwd: 'src',
+				dest: '.tmp'
+			}
+		},
+		coverageReport: {
+			options: {
+        		// this is file we created in 'qunit.coverage' event handler in qunit task
+        		coverageFile: '.tmp/coverage.json',
+        		report: {
+        			html: '.tmp/coverageReports/html/' 
+        		}
+        	},
+        	test: {}
+        }
+    });
+	grunt.registerTask('testcoverage', ['coverageInstrument', 'connect:testcoverage', 'qunit:test', 'coverageReport']);
+```
+
+Now just run: `grunt testcoverage`
+
 
 ## Release History
-
+ * 2013-08-30	v0.1.2  Added 'qunit.coverage' event which is reported on tests completion with window.__coverage__ object.
  * 2013-08-28	v0.1.2	Added 'eventHandlers' option for passing phantomjs' events handlers
  * 2013-08-27	v0.1.0	Forked from grunt-contrib-qunit and grunt-lib-phantomjs and modified - first working version
