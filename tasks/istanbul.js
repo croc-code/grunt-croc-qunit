@@ -1,3 +1,11 @@
+var unixifyPath = function(filepath) {
+	if (process.platform === 'win32') {
+		return filepath.replace(/\\/g, '/');
+	} else {
+		return filepath;
+	}
+};
+
 module.exports = function(grunt) {
 	grunt.registerMultiTask('coverageInstrument', 'Instrument source files.', function() {
 		var fs = require('fs');
@@ -9,12 +17,14 @@ module.exports = function(grunt) {
 		if (!instrumenter) {
 			grunt.fail.warn("Cannot create istanbul.Instrumenter");
 		}
-		var options = this.options({
-		});
+		var path = require('path');
+		var options = this.options({});
+		
 		var dest = this.data.dest;
 		
 		grunt.file.delete(dest);
 
+		// NOTE: this code in general (for src/dest processing) is borrowed from grunt-contrib-copy plugin
 		this.files.forEach(function(filePair) {
 			var isExpandedPair = filePair.orig.expand || false;
 
