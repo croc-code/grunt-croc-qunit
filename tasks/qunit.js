@@ -210,7 +210,7 @@ module.exports = function(grunt) {
       if (disposables.length) {
         disposables.forEach(function (item) {
           phantomjs.off(item[0], item[1]);
-        })
+        });
       }
       // All done!
       done();
