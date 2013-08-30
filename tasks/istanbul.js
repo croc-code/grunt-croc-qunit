@@ -1,3 +1,10 @@
+/*
+ * grunt-croc-qunit
+ * Copyright (c) 2013 Croc Inc.
+ *
+ * Licensed under the MIT license.
+ */
+
 var unixifyPath = function(filepath) {
 	if (process.platform === 'win32') {
 		return filepath.replace(/\\/g, '/');

@@ -1,6 +1,6 @@
 # grunt-croc-qunit [![Build Status](https://travis-ci.org/CrocInc/grunt-croc-qunit.png?branch=master)](https://travis-ci.org/CrocInc/grunt-croc-qunit)
 
-> Run QUnit unit tests in a headless PhantomJS instance.
+> Run QUnit unit tests in a headless PhantomJS instance with code coverage support.
 
 
 ## Overview
@@ -24,7 +24,8 @@ It expects that you will install [PhantomJS][] on your own and supply path to it
 
 Also there are other distinctions from original grunt-contrib-qunit:  
 
--  `bridge.js` script was modified to remove excess processing of QUnit.equal's arguments (see https://github.com/gruntjs/grunt-contrib-qunit/issues/44)  
+-  additinal tasks for generating code coverage reports via [Istanbul][]
+-  `bridge.js` script was modified to remove excess processing of QUnit.equal's arguments (see [this issue](https://github.com/gruntjs/grunt-contrib-qunit/issues/44))  
 -  `bridge.js` reports code coverage info from `window.__coverage__` as phantomjs' `qunit.coverage` event on test completion
 -  added `eventHandlers` option for qunit task 
  
@@ -366,6 +367,17 @@ Now just run: `grunt testcoverage`
 
 
 ## Release History
- * 2013-08-30	v0.1.2  Added 'qunit.coverage' event which is reported on tests completion with window.__coverage__ object.
- * 2013-08-28	v0.1.2	Added 'eventHandlers' option for passing phantomjs' events handlers
+ * 2013-08-30	v0.1.2  Added tasks coverageInstrument/coverageReport for code coverage via Istanbul 
+ * 2013-08-30			Added 'qunit.coverage' event which is reported on tests completion with window.__coverage__ object.
+ * 2013-08-28			Added 'eventHandlers' option for passing phantomjs' events handlers
  * 2013-08-27	v0.1.0	Forked from grunt-contrib-qunit and grunt-lib-phantomjs and modified - first working version
+
+---
+Task submitted by [Sergei Dorogin](http://dorogin.com)
+
+(c) Copyright CROC Inc. 2013
+
+Original tasks ([grunt-contrib-qunit][] and [grunt-lib-phantomjs][]) were authored by:
+
+* ["Cowboy" Ben Alman](http://benalman.com/)
+* [Tyler Kellen](http://goingslowly.com/)
