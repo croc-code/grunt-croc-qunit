@@ -25,7 +25,9 @@ module.exports = function(grunt) {
 			grunt.fail.warn("Cannot create istanbul.Instrumenter");
 		}
 		var path = require('path');
-		var options = this.options({});
+		var options = this.options({
+			autoBind: true
+		});
 		
 		var dest = this.data.dest;
 		
@@ -55,6 +57,16 @@ module.exports = function(grunt) {
 				}
 			});
 		});
+
+		if (options.autoBind) {
+			var coverageFilePath = path.join(dest, 'coverage.json');
+			grunt.config('qunit.options.eventHandlers', {
+				'qunit.coverage': function (coverage) {
+					grunt.file.write(coverageFilePath, JSON.stringify(coverage));
+				}
+			});
+			grunt.config('coverageReport.options.coverageFile', coverageFilePath);
+		}
 	});
 
 	grunt.registerMultiTask('coverageReport', 'Create reports from collected coverage info', function () {
@@ -96,7 +108,7 @@ module.exports = function(grunt) {
 			grunt.log.ok('-  Branches: ' + coverage.branches.pct + '%');
 		}
 
-		// geretage reports
+		// generate reports
 		Object.keys(options.reports).forEach(function (reportName) {
 			var dir = options.reports[reportName];
 			if (!dir) {
