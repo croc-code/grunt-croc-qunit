@@ -284,36 +284,24 @@ Required: yes
 
 The folder where instrumented files will be saved.
 
-#### autoBind
-Type: `Boolean`  
-Required: no  
-Default: `true`  
-
-If `autoBind` option is set then the task will automatically adds a handler for `qunit.coverage` event via `qunit` task's options (see `eventHandlers` option). Also the task will define `coverageFile` option for `coverageReport` task (coverage file will be placed into `dest` folder). So by default you can leave your `qunit` task untouched and get coverage reports.
-
-
 ### `coverageReport` task
-`coverageReport` task controls what reports to generate from coverage info. In most cases coverage info is a json file created on qunit test completion. You can use `qunit.coverage` event to manually handle coverage info and save it into a file or leave it to happen automatically if `autoBind` option was set for `coverageInstrument` task.
-
 #### coverageFile
 Type: `String`    
 Default: (none)    
 Required: yes  
 
-The file path to `coverage.json` file with coverage info saved after tests completion. To create this file you can use `qunit.coverage` event. See example below.  
-This option is set automatically if `autoBind` option of `coverageInstrument` task is specified (by default). 
+The file path to `coverage.json` file with coverage info saved after tests completion. To create this file you can use `qunit.coverage` event. See example below.
 
 #### reports
 Type: `Object`    
 Required: no  
 
-An object to specify what reports should be generated. The object's key can be any report name which Istanbul supports (`html`, `lcov`, `text`; see the [doc](https://github.com/gotwarlost/istanbul/#the-report-command) for details). The key's value should be a folder path  where the report will be created.
+An object to specify what reports should be generated. The object's key can be any report name which Istanbul supports (`html`, `lcov`, `text`; see the [doc](https://github.com/gotwarlost/istanbul/#the-report-command) for details). The key's value should be path to a folder where the report will be created.
 
 
 ### Usage example
 
-It doesn't make much sence to run tasks `coverageInstrument` and `coverageReport` individually. Instead they are designed to be run in a pipeline with `qunit` task.
-But they were designed specifically to be independent from `qunit` task to simplify re-using if you will.
+It doesn't make much sence to run tasks `coverageInstrument` and `coverageReport` individually. Instead they are designed to be run in a pipeline with `qunit` task: 
 
 ```js
 	grunt.initConfig({
@@ -323,8 +311,14 @@ But they were designed specifically to be independent from `qunit` task to simpl
 			},
 			test: {
 				options: {
+					eventHandlers: {
+						// NOTE: we're saving coverage info into filepath specified in coverageReport.options.coverageFile beloww
+						'qunit.coverage': function (coverage) {
+							grunt.file.write('.tmp/coverage.json', JSON.stringify(coverage));
+						}
+					},
 				    // url which `connect` server will be serve
-				    urls: ['http://127.0.0.1:<%= connect.testcoverage.options.port %>/tests-runner.html']
+				    urls: ['http://127.0.0.1:9002/tests-runner.html']
 				}
 			}
 		},
@@ -335,12 +329,12 @@ But they were designed specifically to be independent from `qunit` task to simpl
 					hostname: '127.0.0.1',
 					middleware: function (connect) {
 						return [
-							// instrumented sources first
-							mountFolder(connect, '.tmp'),
-							// then the rest of sources
-							mountFolder(connect, 'src'),
-							// then test fixtures and helpers
-							mountFolder(connect, 'tests')
+						// instrumented sources first
+						mountFolder(connect, '.tmp'),
+						// then the rest of sources
+						mountFolder(connect, 'src'),
+						// then test fixtures and helpers
+						mountFolder(connect, 'tests')
 						];
 					}
 				}
@@ -356,15 +350,16 @@ But they were designed specifically to be independent from `qunit` task to simpl
 			}
 		},
 		coverageReport: {
-			test: {
-				options: {
-	    			report: {
-	    				html: '.tmp/coverageReports/html/' 
-	    			}
-	    		}
-			}
-		}
-	});
+			options: {
+        		// this is file we created in 'qunit.coverage' event handler in qunit task
+        		coverageFile: '.tmp/coverage.json',
+        		report: {
+        			html: '.tmp/coverageReports/html/' 
+        		}
+        	},
+        	test: {}
+        }
+    });
 	grunt.registerTask('testcoverage', ['coverageInstrument', 'connect:testcoverage', 'qunit:test', 'coverageReport']);
 ```
 
@@ -372,7 +367,6 @@ Now just run: `grunt testcoverage`
 
 
 ## Release History
- * 2013-09-02	v0.2.0  Added autoBind option for coverageInstrument task to simplify using coverage tasks 
  * 2013-08-30	v0.1.2  Added tasks coverageInstrument/coverageReport for code coverage via Istanbul 
  * 2013-08-30			Added 'qunit.coverage' event which is reported on tests completion with window.__coverage__ object.
  * 2013-08-28			Added 'eventHandlers' option for passing phantomjs' events handlers
