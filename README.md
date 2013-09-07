@@ -351,7 +351,7 @@ But they were designed specifically to be independent from `qunit` task to simpl
 		coverageInstrument: {
 			test: {
 				// NOTE: we instrument only subset of our sources ('lib')
-				src: 'client/lib/**/*.js',
+				src: 'lib/**/*.js',
 				expand: true,
 				cwd: 'src',
 				dest: '.tmp'
@@ -360,7 +360,7 @@ But they were designed specifically to be independent from `qunit` task to simpl
 		coverageReport: {
 			test: {
 				options: {
-	    			report: {
+	    			reports: {
 	    				html: '.tmp/coverageReports/html/' 
 	    			}
 	    		}
@@ -374,6 +374,7 @@ Now just run: `grunt testcoverage`
 
 
 ## Release History
+ * 2013-09-07	v0.2.1  Added sample project with Gruntfile.js to run unit tests with code coverage
  * 2013-09-02	v0.2.0  Added autoBind option for coverageInstrument task to simplify using coverage tasks 
  * 2013-08-30	v0.1.2  Added tasks coverageInstrument/coverageReport for code coverage via Istanbul 
  * 2013-08-30			Added 'qunit.coverage' event which is reported on tests completion with window.__coverage__ object.
