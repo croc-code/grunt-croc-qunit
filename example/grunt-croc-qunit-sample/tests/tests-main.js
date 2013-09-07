@@ -1,5 +1,5 @@
 require([
-	"jquery",
+	//"jquery",
 	"fixtures/someComponent-tests"
 ], function ($) {
 	QUnit.start();
