@@ -34,7 +34,7 @@ module.exports = function(grunt) {
 		grunt.file.delete(dest);
 
 		var count = 0,
-			generateModuleDir;
+			generateModuleDir,
 			modules = [];
 
 		if (options.generateModule) {
