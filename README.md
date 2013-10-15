@@ -47,7 +47,7 @@ grunt.loadNpmTasks('grunt-croc-qunit');
 ```
 Or just use matchdep module.
 
-NOTE: loadNpmTasks will depricate in Grunt 0.5
+NOTE: loadNpmTasks will deprecate in Grunt 0.5
 
 
 ## QUnit task
@@ -187,6 +187,44 @@ grunt.loadNpmTasks('grunt-contrib-connect');
 grunt.registerTask('test', ['connect:testserver', 'qunit:testserver']);
 ```
 
+#### Specifying filter for QUnit
+It can be usefull to run a single test. QUnit supports `filter` query string parameter. If the parameter is specified then QUnit executes only tests which names satisfy the filter.
+
+```js
+grunt.initConfig({
+  qunit:{
+    options: {
+      'phantomPath': '../../Tools/phantomjs/phantomjs.exe',
+      urlFilter: ""
+    },
+    test: {
+      options: {
+      urls: ['http://127.0.0.1:<%= connect.test.options.port %>/tests-runner.html<%= qunit.options.urlFilter %>']
+    }
+  },
+  connect: {
+    test: {
+      options: {
+        port: 8001,
+        base: '.'
+      }
+    }
+  }
+});
+
+grunt.registerTask('test', function (target) {
+  addQUnitUrlFilter('qunit.options.urlFilter');
+  var filter = grunt.option('filter');
+  if (filter) {
+    grunt.config.set(taskPropName, '?filter=' + filter);
+  }	
+  grunt.task.run(['qunit:test']);
+});	
+
+```
+Now you can execute a single test (or any other ones with filter) via QUnit as: `grunt test --filter=MyTestName`
+
+
 #### Custom timeouts and PhantomJS options
 In the following example, the default timeout value of `5000` is overridden with the value `10000` (timeout values are in milliseconds). Additionally, PhantomJS will read stored cookies from the specified file. See the [PhantomJS API Reference][] for a list of `--` options that PhantomJS supports.
 
@@ -256,7 +294,7 @@ The event `qunit.coverage` allows using [Istanbul][] code coverage library. See 
 
 
 
-## Istanbul tasks (coverageInstrument, coverageReport)
+## Code coverage (via Istanbul) tasks (coverageInstrument, coverageReport)
 
 When you have loaded the plugin (via `grunt.loadNpmTasks`) you have some tasks available besides `qunit`. These tasks are for creating code coverage reports using [Istanbul][]:  
 
@@ -265,33 +303,59 @@ When you have loaded the plugin (via `grunt.loadNpmTasks`) you have some tasks a
 
 [Istanbul]: https://github.com/gotwarlost/istanbul/
 
-The plugin doesn't depend on Istanbul module directly. So it doesn't add additional dependency into your project if we arn't going to use code coverage with Istanbul.
-If you decided to use Istanbul for code coverage you will need to install Istanbul:
+The plugin doesn't depend on Istanbul module directly. So it doesn't add additional dependency into your project if you arn't going to use code coverage with Istanbul.
+If you decide to use Istanbul for code coverage you will need to install Istanbul:
 `npm install istanbul --save-dev`.
+
+Code coverage tasks are supposed to be run in the following order: coverageInstrument => qunit => coverageReport.
+
 
 ### `coverageInstrument` task
 
 Task targets, files and options may be specified according to the grunt [Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
-Task's `src` specifies what files will be instrumented. Task's parameters should describe a set of `*.js` files. Task's `dest` specified where instrumented files will be saved (some kind of temporary folder). These instrumented files should be used during tests execution.
- 
+Task's `src` specifies what files will be instrumented. Task's parameters should describe a set of `*.js` files. Task's `dest` property specifies a folder path where instrumented files will be saved (some kind of temporary folder). These instrumented files should be used during tests execution.   
+The task `src-dest` mappings specification use standard [Grunt rules for files processing](http://gruntjs.com/configuring-tasks#files).
+  
 #### src
 Type: `String`  
 Required: yes
 
-`*.js` files to instrument
+`src`, `expand`, `cwd` properties should descibe a set of `*.js` files to instument.
 
 #### dest
 Type: `String`  
 Required: yes
 
-The folder where instrumented files will be saved.
+A folder path where instrumented files will be saved.
 
-#### autoBind
+#### Options
+##### autoBind
 Type: `Boolean`  
 Required: no  
 Default: `true`  
 
 If `autoBind` option is set then the task will automatically adds a handler for `qunit.coverage` event via `qunit` task's options (see `eventHandlers` option). Also the task will define `coverageFile` option for `coverageReport` task (coverage file will be placed into `dest` folder). So by default you can leave your `qunit` task untouched and get coverage reports.
+
+##### generateModule
+Type: `Object`  
+Required: no  
+
+The option allows to generade a AMD module with imports of all instrumented files. This is usefull for getting more accurate coverage reports. If an instrumeneted file wasn't loaded during tests execution then coverage report won't take it into account at all and you'll get falsy high numbers of coverage. 
+For getting correct numbers of code coverage you need to load all your  files during test execution. You can do it manually or allow coverageInstrument task to do it for you.
+The task supposes that all files are AMD-modules (e.g. loaded via RequireJS). In your main module for tests you can import a stub like 'all-modules'. Then tell coverageInstrument task to replace the stub with generated module which will contain imports of all instrumented files.  
+For more info see examples below.  
+  
+`generateModule` option is an object with properties:
+  
+* `output` - path to generated module (i.e. js file path):  
+Type: `String`  
+Required: yes
+* `ignore` - an array of module names to ignore (they won't be included into generated module):   
+Type: `Array`  
+Required: no
+
+Generated AMD-module will contain imports of modules which names are relative to the module folder.
+For example if `generateModule.output` equals to `.tmp/all-modules.js` then all module names will relative to '.tmp' folder. It's supposed that instrumented files are put into the same folder (via `dest` option).
 
 
 ### `coverageReport` task
@@ -318,6 +382,11 @@ It doesn't make much sence to run tasks `coverageInstrument` and `coverageReport
 But they were designed specifically to be independent from `qunit` task to simplify re-using if you will.
 
 ```js
+
+	function mountFolder (connect, dir) {
+		return connect.static(require('path').resolve(dir));
+	};
+
 	grunt.initConfig({
 		qunit:{
 			options: {
@@ -361,7 +430,7 @@ But they were designed specifically to be independent from `qunit` task to simpl
 			test: {
 				options: {
 	    			report: {
-	    				html: '.tmp/coverageReports/html/' 
+	    				html: 'coverageReports/' 
 	    			}
 	    		}
 			}
@@ -373,10 +442,60 @@ But they were designed specifically to be independent from `qunit` task to simpl
 Now just run: `grunt testcoverage`
 
 
+#### `generateModule` option usage
+The config from the previous example can be extended by adding `generateModule` option into `coverageInstrument` task:  
+   
+```js
+
+		coverageInstrument: {
+			test: {
+				options: {
+					generateModule: {
+						output: '.tmp/all-modules.js',
+						// put here all modules for which you have aliases in requirejs' config (paths)
+						ignore: ['lib/core', 'lib/xcss', 'lib/xhtmpl']
+					}
+				},
+				// NOTE: we instrument only subset of our sources ('lib')
+				src: 'lib/**/*.js',
+				expand: true,
+				cwd: 'src',
+				dest: '.tmp'
+			}
+		},
+```
+
+tests-runner.html file contains something like this:  
+ 
+```html
+<script type="text/javascript" src="require.config.js"></script>
+<script type="text/javascript" src="vendor/require.js" data-main="tests-main"></script>
+```
+
+main script tests-main.js:   
+
+```js
+require([
+	"all-modules",
+	"fixtures/component1-tests", ... all other tests
+], function () {
+
+	// run all tests after their modules were loaded
+	QUnit.start();
+});
+```
+
+Here all-modules.js is a stub module:
+
+```js
+define([], function () {});
+```
+
 ## Release History
+ * 2013-10-15	v0.3.0	Addded generateModule option
  * 2013-09-02	v0.2.0  Added autoBind option for coverageInstrument task to simplify using coverage tasks 
  * 2013-08-30	v0.1.2  Added tasks coverageInstrument/coverageReport for code coverage via Istanbul 
- * 2013-08-30			Added 'qunit.coverage' event which is reported on tests completion with window.__coverage__ object.
+ * 2013-08-30			Added 'qunit.coverage' event which is reported on tests completion with `window.__coverage__` object.
  * 2013-08-28			Added 'eventHandlers' option for passing phantomjs' events handlers
  * 2013-08-27	v0.1.0	Forked from grunt-contrib-qunit and grunt-lib-phantomjs and modified - first working version
 

@@ -33,6 +33,13 @@ module.exports = function(grunt) {
 		
 		grunt.file.delete(dest);
 
+		var count = 0,
+			generateModuleDir;
+			modules = [];
+
+		if (options.generateModule) {
+			generateModuleDir = path.dirname(options.generateModule.output);
+		}
 		// NOTE: this code in general (for src/dest processing) is borrowed from grunt-contrib-copy plugin
 		this.files.forEach(function(filePair) {
 			var isExpandedPair = filePair.orig.expand || false;
@@ -44,7 +51,6 @@ module.exports = function(grunt) {
 				} else {
 					dest = filePair.dest;
 				}
-
 				if (grunt.file.isDir(src)) {					
 					grunt.file.mkdir(dest);					
 				} else {
@@ -54,10 +60,16 @@ module.exports = function(grunt) {
 					grunt.file.write(dest, code);
 					grunt.log.muted = false;
 					grunt.verbose.writeln('OK'.green);
+					count++;
+					if (options.generateModule) {
+						modules.push(path.relative(generateModuleDir, dest).replace(/\\/g, '/').replace(/.js$/, ''));
+					}
 				}
 			});
 		});
+		grunt.log.writeln('' + count.cyan + ' files were instrumented');
 
+		// bind to 'qunit' task's event to capture coverage info
 		if (options.autoBind) {
 			var coverageFilePath = path.join(dest, 'coverage.json');
 			grunt.config('qunit.options.eventHandlers', {
@@ -66,6 +78,20 @@ module.exports = function(grunt) {
 				}
 			});
 			grunt.config('coverageReport.options.coverageFile', coverageFilePath);
+			grunt.log.writeln('Autobinded to QUnit, coverage report will be saved into ' + coverageFilePath.cyan);
+		}
+
+		// generate an AMD module with imports of all instrumented modules
+		if (options.generateModule) {
+			if (options.generateModule.ignore && options.generateModule.ignore.length) {
+				options.generateModule.ignore.forEach(function (ignore) {
+					var idx = modules.indexOf(ignore);
+					if (idx > -1) {
+						modules.splice(idx,1);
+					}
+				});
+			}
+			grunt.file.write(options.generateModule.output, 'define(["' + modules.join('","') + '"],function () { /* generated code by grunt-croc-qunit */ });');
 		}
 	});
 
