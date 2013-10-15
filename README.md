@@ -315,7 +315,7 @@ Code coverage tasks are supposed to be run in the following order: coverageInstr
 Task targets, files and options may be specified according to the grunt [Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
 Task's `src` specifies what files will be instrumented. Task's parameters should describe a set of `*.js` files. Task's `dest` property specifies a folder path where instrumented files will be saved (some kind of temporary folder). These instrumented files should be used during tests execution.   
 The task `src-dest` mappings specification use standard [Grunt rules for files processing](http://gruntjs.com/configuring-tasks#files).
-  
+ 
 #### src
 Type: `String`  
 Required: yes
@@ -420,7 +420,7 @@ But they were designed specifically to be independent from `qunit` task to simpl
 		coverageInstrument: {
 			test: {
 				// NOTE: we instrument only subset of our sources ('lib')
-				src: 'client/lib/**/*.js',
+				src: 'lib/**/*.js',
 				expand: true,
 				cwd: 'src',
 				dest: '.tmp'
@@ -429,7 +429,7 @@ But they were designed specifically to be independent from `qunit` task to simpl
 		coverageReport: {
 			test: {
 				options: {
-	    			report: {
+	    			reports: {
 	    				html: 'coverageReports/' 
 	    			}
 	    		}
@@ -493,6 +493,7 @@ define([], function () {});
 
 ## Release History
  * 2013-10-15	v0.3.0	Addded generateModule option
+ * 2013-09-07	v0.2.1  Added sample project with Gruntfile.js to run unit tests with code coverage
  * 2013-09-02	v0.2.0  Added autoBind option for coverageInstrument task to simplify using coverage tasks 
  * 2013-08-30	v0.1.2  Added tasks coverageInstrument/coverageReport for code coverage via Istanbul 
  * 2013-08-30			Added 'qunit.coverage' event which is reported on tests completion with `window.__coverage__` object.
