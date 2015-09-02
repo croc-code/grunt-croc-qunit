@@ -1,6 +1,7 @@
 # grunt-croc-qunit [![Build Status](https://travis-ci.org/CrocInc/grunt-croc-qunit.png?branch=master)](https://travis-ci.org/CrocInc/grunt-croc-qunit)
 
-[![NPM](https://nodei.co/npm/grunt-croc-qunit.png?downloads=true&stars=true)](https://nodei.co/npm/grunt-croc-qunit/)
+[![NPM](https://nodei.co/npm/grunt-croc-qunit.png?downloads=true&downloadRank=true)](https://nodei.co/npm/grunt-croc-qunit/)  
+[![Build Status](https://travis-ci.org/CrocInc/grunt-croc-qunit.svg?branch=master)](https://travis-ci.org/CrocInc/grunt-croc-qunit)  
 
 > Run QUnit unit tests in a headless PhantomJS instance with code coverage support.
 

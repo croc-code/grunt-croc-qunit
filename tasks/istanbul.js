@@ -63,7 +63,7 @@ module.exports = function(grunt) {
 				if (grunt.file.isDir(src)) {					
 					grunt.file.mkdir(dest);					
 				} else {
-					grunt.verbose.write('Instrumenting ' + src.cyan + ' -> ' + dest.cyan + '...');
+					grunt.verbose.writeln('Instrumenting ' + src.cyan + ' -> ' + dest.cyan + '...');
 					var code = instrumenter.instrumentSync(String(fs.readFileSync(src)), src);
 					grunt.log.muted = true;
 					grunt.file.write(dest, code);
