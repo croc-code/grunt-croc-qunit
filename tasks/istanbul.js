@@ -13,6 +13,15 @@ var unixifyPath = function(filepath) {
 	}
 };
 
+
+var mergeReports = function(report1, report2) {
+	var istanbul = require('istanbul');
+	var collector = new istanbul.Collector();
+	collector.add(report1);
+	collector.add(report2);
+	return collector.getFinalCoverage();
+};
+
 module.exports = function(grunt) {
 	grunt.registerMultiTask('coverageInstrument', 'Instrument source files.', function() {
 		var fs = require('fs');
@@ -74,6 +83,10 @@ module.exports = function(grunt) {
 			var coverageFilePath = path.join(dest, 'coverage.json');
 			grunt.config('qunit.options.eventHandlers', {
 				'qunit.coverage': function (coverage) {
+					if (fs.existsSync(coverageFilePath)) {
+						var oldCover = grunt.file.readJSON(coverageFilePath);
+						coverage = mergeReports(oldCover, coverage);
+					}					
 					grunt.file.write(coverageFilePath, JSON.stringify(coverage));
 				}
 			});
