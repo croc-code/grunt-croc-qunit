@@ -341,8 +341,8 @@ Type: `Object`
 Required: no  
 
 The option allows to generade a AMD module with imports of all instrumented files. This is usefull for getting more accurate coverage reports. If an instrumeneted file wasn't loaded during tests execution then coverage report won't take it into account at all and you'll get falsy high numbers of coverage. 
-For getting correct numbers of code coverage you need to load all your  files during test execution. You can do it manually or allow coverageInstrument task to do it for you.
-The task supposes that all files are AMD-modules (e.g. loaded via RequireJS). In your main module for tests you can import a stub like 'all-modules'. Then tell coverageInstrument task to replace the stub with generated module which will contain imports of all instrumented files.  
+For getting correct numbers of code coverage you need to load all your  files during test execution. You can do it manually or allow `coverageInstrument` task to do it for you.
+The task supposes that all files are AMD-modules (e.g. loaded via [RequireJS](http://requirejs.org/) or the like). In your main module for tests you can import a stub like 'all-modules'. Then tell `coverageInstrument` task to replace the stub with generated module which will contain imports of all instrumented files.  
 For more info see examples below.  
   
 `generateModule` option is an object with properties:
@@ -492,6 +492,7 @@ define([], function () {});
 ```
 
 ## Release History
+ * 2015-09-02	v0.3.1	Support multiple URLs for coverage (converage reports are merged)
  * 2013-10-15	v0.3.0	Addded generateModule option
  * 2013-09-07	v0.2.1  Added sample project with Gruntfile.js to run unit tests with code coverage
  * 2013-09-02	v0.2.0  Added autoBind option for coverageInstrument task to simplify using coverage tasks 
@@ -503,9 +504,13 @@ define([], function () {});
 ---
 Task submitted by [Sergei Dorogin](http://dorogin.com)
 
-(c) Copyright CROC Inc. 2013
+(c) Copyright CROC Inc. 2013-2015  
 
 Original tasks ([grunt-contrib-qunit][] and [grunt-lib-phantomjs][]) were authored by:
 
 * ["Cowboy" Ben Alman](http://benalman.com/)
 * [Tyler Kellen](http://goingslowly.com/)
+
+Contributors:
+
+* [yamikuronue](https://github.com/yamikuronue)  
