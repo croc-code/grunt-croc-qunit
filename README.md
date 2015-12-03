@@ -30,6 +30,7 @@ Also there are other distinctions from original grunt-contrib-qunit:
 -  `bridge.js` script was modified to remove excess processing of QUnit.equal's arguments (see [this issue](https://github.com/gruntjs/grunt-contrib-qunit/issues/44))  
 -  `bridge.js` reports code coverage info from `window.__coverage__` as phantomjs' `qunit.coverage` event on test completion
 -  added `eventHandlers` option for qunit task 
+-  pay attention not to redefine window.alert as it is used internally by the tasks for coordination purposes
  
 ## Getting Started
 This plugin requires Grunt `~0.4.0`
@@ -307,7 +308,13 @@ The plugin doesn't depend on Istanbul module directly. So it doesn't add additio
 If you decide to use Istanbul for code coverage you will need to install Istanbul:
 `npm install istanbul --save-dev`.
 
-Code coverage tasks are supposed to be run in the following order: coverageInstrument => qunit => coverageReport.
+You should also install [grunt-contrib-connect][] and [serve-static][] in order to be able to generate the static web server that will allow you to execute the instrumented .js code in place of the original .js code: 
+`npm install grunt-contrib-connect--save-dev`
+`npm install serve-static--save-dev`
+[grunt-contrib-connect]: https://www.npmjs.com/package/grunt-contrib-connect
+[serve-static]: https://www.npmjs.com/package/serve-static
+
+Code coverage tasks are supposed to be run in the following order: coverageInstrument => connect:testcoverage => qunit => coverageReport.
 
 
 ### `coverageInstrument` task
@@ -335,6 +342,42 @@ Required: no
 Default: `true`  
 
 If `autoBind` option is set then the task will automatically adds a handler for `qunit.coverage` event via `qunit` task's options (see `eventHandlers` option). Also the task will define `coverageFile` option for `coverageReport` task (coverage file will be placed into `dest` folder). So by default you can leave your `qunit` task untouched and get coverage reports.
+
+##### `connect:testcoverage`
+
+In order to be able to substitute the original sources with the instrumented sources without having to modify the test files, one should create a webserver serving static content that can server the instrumented sources as the original one.
+
+The [grub-contrib-connect][] and [serve-static][] packages allow the on-the-fly creation of a local web server where the tests can be run and where the http://localhost:port/src will be associated with the instrumented local version of the sources files. The middleware functionnality of connect is exploited and a specific mountFolder function is used in order to associate the web server aliases with the local folders.  
+
+```js
+	function mountFolder (connect, alias, dir) {
+		//for grunt-contrib-connect 2.x
+		//return connect.static(alias,require('path').resolve(dir)); 
+		
+		//for grunt-contrib-connect 3.x
+		var local_dir=require('path').resolve(dir);         
+	        return connect().use("/"+alias,serveStatic(y));      //associate localhost:port/alias with local_dir
+	};
+
+	grunt.initConfig({...,
+		connect: {
+			testcoverage: {
+				options: {
+					..
+					middleware: function (connect) {
+						return [
+							// instrumented sources first as "regular" sources
+							mountFolder(connect, 'src','.tmp'),
+							// then test fixtures and libs
+							mountFolder(connect, 'test','tests'),
+							mountFolder(connect, 'libs','libs'),
+						];
+					}
+				}
+			}
+		}, ...});
+	}
+```
 
 ##### generateModule
 Type: `Object`  
@@ -383,8 +426,13 @@ But they were designed specifically to be independent from `qunit` task to simpl
 
 ```js
 
-	function mountFolder (connect, dir) {
-		return connect.static(require('path').resolve(dir));
+	function mountFolder (connect, alias, dir) {
+		//for grunt-contrib-connect 2.x
+		//return connect.static(alias,require('path').resolve(dir)); 
+		
+		//for grunt-contrib-connect 3.x
+		var local_dir=require('path').resolve(dir);         
+	        return connect().use("/"+alias,serveStatic(y));      //associate localhost:port/alias with local_dir
 	};
 
 	grunt.initConfig({
@@ -406,12 +454,12 @@ But they were designed specifically to be independent from `qunit` task to simpl
 					hostname: '127.0.0.1',
 					middleware: function (connect) {
 						return [
-							// instrumented sources first
-							mountFolder(connect, '.tmp'),
-							// then the rest of sources
-							mountFolder(connect, 'src'),
+							// instrumented sources first as real src through alias usage
+							mountFolder(connect, 'src','.tmp'),
 							// then test fixtures and helpers
-							mountFolder(connect, 'tests')
+							mountFolder(connect, 'tests','tests'),
+							// other libs
+							mountFolder(connect, 'lib','lib')
 						];
 					}
 				}
