@@ -47,7 +47,7 @@ module.exports = function(grunt) {
 					hostname: '127.0.0.1',
 					middleware: function (connect) {
 						return [
-							mountFolder(connect, '.tmp'),
+							mountFolder(connect, '../.tmp'),
 							mountFolder(connect, 'src'),
 							mountFolder(connect, 'tests'),
 						]
@@ -60,14 +60,14 @@ module.exports = function(grunt) {
 				src: 'lib/**/*.js',
 				expand: true,
 				cwd: 'src',
-				dest: '.tmp'
+				dest: '../.tmp'
 			}
 		},
 		coverageReport: {
         	test: {
 				options: {
 	        		reports: {
-	        			html: '.tmp/coverageReports/html/'
+	        			html: '../reports/html/'
 	        		}        		
 	        	}
         	}

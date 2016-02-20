@@ -1,7 +1,7 @@
 {
   "name": "grunt-croc-qunit",
   "description": "Run QUnit unit tests in a headless PhantomJS instance with code coverage support via Istanbul. Despite grunt-contrib-qunit it has no direct dependency on phantomjs module",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "homepage": "https://github.com/CrocInc/grunt-croc-qunit",
   "author": {
     "name": "Sergei Dorogin",
