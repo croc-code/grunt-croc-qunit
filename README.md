@@ -544,6 +544,8 @@ define([], function () {});
 ```
 
 ## Release History
+ * 2016-06-23	v0.4.0	Added 'force' option for 'qunit' task
+ * 2016-02-21	v0.3.2	Support Grunt 1.0
  * 2015-09-02	v0.3.1	Support multiple URLs for coverage (converage reports are merged)
  * 2013-10-15	v0.3.0	Addded generateModule option
  * 2013-09-07	v0.2.1  Added sample project with Gruntfile.js to run unit tests with code coverage
@@ -554,9 +556,9 @@ define([], function () {});
  * 2013-08-27	v0.1.0	Forked from grunt-contrib-qunit and grunt-lib-phantomjs and modified - first working version
 
 ---
-Task submitted by [Sergei Dorogin](http://dorogin.com)
+Authored by [Sergei Dorogin](http://about.dorogin.com)
 
-(c) Copyright CROC Inc. 2013-2015  
+(c) Copyright CROC Inc. 2013-2016  
 
 Original tasks ([grunt-contrib-qunit][] and [grunt-lib-phantomjs][]) were authored by:
 
