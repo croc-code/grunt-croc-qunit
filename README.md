@@ -33,7 +33,7 @@ Also there are other distinctions from original grunt-contrib-qunit:
 -  pay attention not to redefine window.alert as it is used internally by the tasks for coordination purposes
  
 ## Getting Started
-This plugin requires Grunt `~0.4.0`
+This plugin requires Grunt `>=0.4.0`
 
 If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:
 
@@ -47,8 +47,6 @@ Once the plugin has been installed, it may be enabled inside your Gruntfile with
 grunt.loadNpmTasks('grunt-croc-qunit');
 ```
 Or just use matchdep module.
-
-NOTE: loadNpmTasks will deprecate in Grunt 0.5
 
 
 ## QUnit task
@@ -103,6 +101,12 @@ Type: `String`
 Default: (none)
 
 Additional `--` style arguments that need to be passed in to PhantomJS may be specified as options, like `{'--option': 'value'}`. This may be useful for specifying a cookies file, local storage file, or a proxy. See the [PhantomJS API Reference][] for a list of `--` options that PhantomJS supports.
+
+#### force
+Type: `boolean`  
+Default: `false`
+
+Do not fail task if some failed
 
 
 ### Usage examples

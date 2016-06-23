@@ -146,6 +146,8 @@ module.exports = function(grunt) {
       urls: [],
       // Custom phantomjs' events handlers (e.g. for extracting coverage reports)
       eventHandlers: {}
+      // do not fail task if tests fail
+      //force: false
     }),
     // This task is asynchronous.
     done = this.async(),
@@ -197,13 +199,19 @@ module.exports = function(grunt) {
     // All tests have been run.
     function() {
       // Log results.
+      // NOTE: do not fail the task if 'force' option was specified
       if (status.failed > 0) {
-        grunt.warn(status.failed + '/' + status.total + ' assertions failed (' +
-          status.duration + 'ms)');
+        var failMsg = (status.failed + '/' + status.total + ' assertions failed (' + status.duration + 'ms)');
+        if (options.force) {
+          grunt.log.warn(failMsg);
+          grunt.log.writeln("\nExecution continues as option 'force' was set");
+        } else {
+          grunt.fail.warn(failMsg);
+        }
       } else if (status.total === 0) {
-        grunt.warn('0/0 assertions ran (' + status.duration + 'ms)');
+        grunt.fail.warn('0/0 assertions ran (' + status.duration + 'ms)');
       } else {
-        grunt.verbose.writeln();
+        grunt.log.writeln();
         grunt.log.ok(status.total + ' assertions passed (' + status.duration + 'ms)');
       }
       // teardown: remove events handlers
