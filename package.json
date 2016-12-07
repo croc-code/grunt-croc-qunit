@@ -1,7 +1,7 @@
 {
   "name": "grunt-croc-qunit",
-  "description": "Run QUnit unit tests in a headless PhantomJS instance with code coverage support via Istanbul. Despite grunt-contrib-qunit it has no direct dependency on phantomjs module",
-  "version": "0.4.0",
+  "description": "Run QUnit unit tests in headless PhantomJS with code coverage support via Istanbul. Despite grunt-contrib-qunit it has no direct dependency on phantomjs module",
+  "version": "1.0.0",
   "homepage": "https://github.com/CrocInc/grunt-croc-qunit",
   "author": {
     "name": "Sergei Dorogin",
@@ -21,31 +21,26 @@
     }
   ],
   "main": "Gruntfile.js",
-  "engines": {
-    "node": ">= 0.8.0"
-  },
   "scripts": {
     "test": "grunt"
   },
   "dependencies": {
-    "eventemitter2": "~0.4.9",
-    "semver": "~1.0.14",
-    "temporary": "~0.0.4"
+    "colors": "^1.1.2",
+    "eventemitter2": "~2.2.1",
+    "semver": "~5.3.0",
+    "temporary": "~0.0.8"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-connect": "~0.3.0",
-    "difflet": "~0.2.3",
+    "grunt": "~1.0.1",
+    "grunt-contrib-jshint": "~1.1.0",
+    "grunt-contrib-connect": "~1.0.2",
+    "difflet": "~1.0.1",
     "phantomjs": "~1.9.0-1"
   },
-  "peerDependencies": {
-    "grunt": ">=0.4.0"
-  },
   "keywords": [
-    "gruntplugin",
     "qunit",
     "grunt",
+    "gruntplugin",
     "phantomjs",
     "CROC",
     "Istanbul",
