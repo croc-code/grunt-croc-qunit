@@ -13,6 +13,8 @@
 
 'use strict';
 
+var reporter;
+
 module.exports = function(grunt) {
 
   // Nodejs libs.
@@ -22,94 +24,53 @@ module.exports = function(grunt) {
   var phantomjs = require('./phantomjs').init(grunt);
 
   // Keep track of the last-started module, test and status.
-  var currentModule, currentTest, status;
+  var g_currentTest, status;
   // Keep track of the last-started test(s).
   var unfinished = {};
 
   // Get an asset file, local to the root of the project.
   var asset = path.join.bind(null, __dirname, '..');
 
-  // Allow an error message to retain its color when split across multiple lines.
-  var formatMessage = function(str) {
-    return String(str).split('\n').map(function(s) { return s.magenta; }).join('\n');
-  };
-
-  // Keep track of failed assertions for pretty-printing.
-  var failedAssertions = [];
-  var logFailedAssertions = function() {
-    var assertion;
-    // Print each assertion error.
-    while (assertion = failedAssertions.shift()) {
-      grunt.verbose.or.error(assertion.testName);
-      grunt.log.error('Message: ' + formatMessage(assertion.message));
-      if (assertion.actual !== assertion.expected) {
-        grunt.log.error('Actual: ' + formatMessage(assertion.actual));
-        grunt.log.error('Expected: ' + formatMessage(assertion.expected));
-      }
-      if (assertion.source) {
-        grunt.log.error(assertion.source.replace(/ {4}(at)/g, '  $1'));
-      }
-      grunt.log.writeln();
-    }
-  };
-
   // QUnit hooks.
-  phantomjs.on('qunit.moduleStart', function(name) {
-    unfinished[name] = true;
-    currentModule = name;
+
+  phantomjs.on('qunit.begin', function (details) {
+    reporter.begin(details);
   });
 
-  phantomjs.on('qunit.moduleDone', function(name/*, failed, passed, total*/) {
-    delete unfinished[name];
+  phantomjs.on('qunit.moduleStart', function(details) {
+    unfinished[details.name] = true;
+    //g_currentModule = details.name;
+    reporter.moduleStart(details);
   });
 
-  phantomjs.on('qunit.log', function(result, actual, expected, message, source) {
-    if (!result) {
-      failedAssertions.push({
-        actual: actual, expected: expected, message: message, source: source,
-        testName: currentTest
-      });
-    }
+  phantomjs.on('qunit.moduleDone', function(details) {
+    delete unfinished[details.name];
+    reporter.moduleDone(details);
   });
 
-  phantomjs.on('qunit.testStart', function(name) {
-    currentTest = (currentModule ? currentModule + ' - ' : '') + name;
-    grunt.verbose.write(currentTest + '...');
+  phantomjs.on('qunit.log', function(details) {
+    reporter.assert(details);
   });
 
-  phantomjs.on('qunit.testDone', function(name, failed/*, passed, total*/) {
-    // Log errors if necessary, otherwise success.
-    if (failed > 0) {
-      // list assertions
-      if (grunt.option('verbose')) {
-        grunt.log.error();
-        logFailedAssertions();
-      } else {
-        grunt.log.write('F'.red);
-      }
-    } else {
-      grunt.verbose.ok().or.write('.');
-    }
+  phantomjs.on('qunit.testStart', function(details) {
+    g_currentTest = (details.module ? details.module + ' - ' : '') + details.name;
+    //grunt.verbose.write(g_currentTest + '...');
+    reporter.testStart(details);
   });
 
-  phantomjs.on('qunit.done', function(failed, passed, total, duration) {
-    grunt.verbose.writeln('QUnit tests done (' + duration + 'ms)');
+  phantomjs.on('qunit.testDone', function(details) {
+    reporter.testDone(details);
+  });
+
+  phantomjs.on('qunit.done', function(details) {
+    grunt.verbose.writeln('QUnit tests done (' + details.runtime + 'ms)');
     phantomjs.halt();
-    status.failed += failed;
-    status.passed += passed;
-    status.total += total;
-    status.duration += duration;
-    // Print assertion errors here, if verbose mode is disabled.
-    if (!grunt.option('verbose')) {
-      if (failed > 0) {
-        grunt.log.writeln();
-        logFailedAssertions();
-      } else if (total === 0) {
-        grunt.warn('0/0 assertions ran (' + duration + 'ms)');
-      } else {
-        grunt.log.ok();
-      }
-    }
+    status.failed += details.failed;
+    status.passed += details.passed;
+    status.total += details.total;
+    status.duration += details.runtime;
+
+    reporter.done(details);
   });
 
   // Re-broadcast qunit events on grunt.event.
@@ -119,7 +80,7 @@ module.exports = function(grunt) {
   });
 
   // Built-in error handlers.
-  phantomjs.on('fail.load', function(url) {
+  phantomjs.on('page.load.fail', function(url) {
     phantomjs.halt();
     grunt.verbose.write('Running PhantomJS...').or.write('...');
     grunt.log.error();
@@ -132,9 +93,6 @@ module.exports = function(grunt) {
     grunt.warn('PhantomJS timed out, possibly due to a missing QUnit start() call.');
   });
 
-  // Pass-through console.log statements.
-  phantomjs.on('console', console.log.bind(console));
-
   grunt.registerMultiTask('qunit', 'Run QUnit unit tests in a headless PhantomJS instance.', function() {
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
@@ -145,7 +103,9 @@ module.exports = function(grunt) {
       // Explicit non-file URLs to test.
       urls: [],
       // Custom phantomjs' events handlers (e.g. for extracting coverage reports)
-      eventHandlers: {}
+      eventHandlers: {},
+      reporter: 'console',
+      verbose: true
       // do not fail task if tests fail
       //force: false
     }),
@@ -153,6 +113,14 @@ module.exports = function(grunt) {
     done = this.async(),
     disposables = [];
 
+    grunt.verbose.writeln("Using reporter " + options.reporter);
+    if (options.reporter === 'teamcity') {
+      reporter = require('./qunit.reporter.teamcity');
+    } else {
+      reporter = require('./qunit.reporter.grunt');
+    }
+    reporter.init(grunt, {verbose: options.verbose});
+//console.log("REPORTER: verbose=" + options.verbose);
     if (options.eventHandlers) {
       Object.keys(options.eventHandlers).forEach(function (eventName) {
         var handler = options.eventHandlers[eventName];
@@ -170,15 +138,22 @@ module.exports = function(grunt) {
 
     // Reset status.
     status = {failed: 0, passed: 0, total: 0, duration: 0};
+    
+    if (options.verbose) {
+      // Pass-through console.log statements.
+      //phantomjs.on('page.console', console.log.bind(console));
+      phantomjs.on('page.console', function () {
+        reporter.log.apply(reporter, arguments);
+        //console.log.apply(console, arguments);
+      });
+    }
 
     // Process each filepath in-order.
     grunt.util.async.forEachSeries(urls, function(url, next) {
       var basename = path.basename(url);
       grunt.verbose.subhead('Testing ' + url + ' ').or.write('Testing ' + url + ' ');
 
-      // Reset current module.
-      currentModule = null;
-
+      grunt.log.writeln();
       // Launch PhantomJS.
       grunt.event.emit('qunit.spawn', url);
       phantomjs.spawn(url, {

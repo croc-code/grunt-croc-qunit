@@ -8,15 +8,16 @@
 ## Overview
 This plugin is modified version of two plugins: [grunt-contrib-qunit][] and [grunt-lib-phantomjs][].
 Here's reasoning why it was forked and modified.
-Original grunt-contrib-qunit creates the following dependencies tree:
+
+Original `grunt-contrib-qunit` creates the following dependencies tree:
 * grunt-contrib-qunit -> grunt-lib-phantomjs -> phantomjs npm module -> PhantomJS
 
 This works great when you install [grunt-contrib-qunit][] from official npm registry. All dependencies downloaded and installed automatically.
 But [phantomjs npm module][] has very specific feature: on installation after [PhantomJS][] downloading it hardcodes absolute path to its executable.
-Such bahavior makes it impossible to share `node_modules` folder between machines. 
+Such behavior makes it impossible to share `node_modules` folder between machines. 
 Consequently, it's impossible to keep `node_modules` in VCS (Git/Subversion).
 
-That's because this plugin was created. It does not depend on [grunt-lib-phantomjs][] nor [phantomjs npm module][].
+That's because this plugin was created. It does not depend on `grunt-lib-phantomjs` and `phantomjs` npm modules.
 It expects that you will install [PhantomJS][] on your own and supply path to its executable in task's options.
 
 [grunt-contrib-qunit]: https://github.com/gruntjs/grunt-contrib-qunit
@@ -24,18 +25,19 @@ It expects that you will install [PhantomJS][] on your own and supply path to it
 [phantomjs npm module]: https://github.com/Obvious/phantomjs
 [PhantomJS]: http://www.phantomjs.org/
 
-Also there are other distinctions from original grunt-contrib-qunit:  
+There are other distinctions from original `grunt-contrib-qunit`:  
 
 -  additinal tasks for generating code coverage reports via [Istanbul][]
 -  `bridge.js` script was modified to remove excess processing of QUnit.equal's arguments (see [this issue](https://github.com/gruntjs/grunt-contrib-qunit/issues/44))  
 -  `bridge.js` reports code coverage info from `window.__coverage__` as phantomjs' `qunit.coverage` event on test completion
--  added `eventHandlers` option for qunit task 
--  pay attention not to redefine window.alert as it is used internally by the tasks for coordination purposes
+-  added `eventHandlers` option for `qunit` task
+-  different reporters support: logging test results by default is done to console (via grunt.log), but there is another reporter "teamcity" which reports result in [JetBrains TeamCity](https://www.jetbrains.com/teamcity/) syntax.
+
+> Pay attention not to redefine `window.alert` as it is used internally by the tasks for coordination purposes
  
 ## Getting Started
-This plugin requires Grunt `>=0.4.0`
-
-If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:
+ 
+To install the plugin:
 
 ```shell
 npm install grunt-croc-qunit --save-dev
@@ -46,22 +48,24 @@ Once the plugin has been installed, it may be enabled inside your Gruntfile with
 ```js
 grunt.loadNpmTasks('grunt-croc-qunit');
 ```
-Or just use matchdep module.
+Or just use `matchdep` module.
 
 
 ## QUnit task
-_Run this task with the `grunt qunit` command._
+_Grunt task for executing [QUnit][] tests inside PhantomJS_.
 
 Task targets, files and options may be specified according to the grunt [Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
 
 Please note that this plugin doesn't download and install [PhantomJS][].
 
-For running qunit tests you'll need to manually install PhantomJS first into some reachable place. You can use [phantomjs npm module][] for this.
+For running [QUnit][] tests you'll need to manually install PhantomJS first into some reachable place. You can use [phantomjs npm module][] for this.
 
+[QUnit]: http://qunitjs.com/
 [PhantomJS]: http://www.phantomjs.org/
 [phantomjs npm module]: https://github.com/Obvious/phantomjs
 
 Also note that running grunt with the `--debug` flag will output a lot of PhantomJS-specific debugging information. This can be very helpful in seeing what actual URIs are being requested and received by PhantomJS.
+
 ### Options
 
 #### phantomPath
@@ -108,6 +112,20 @@ Default: `false`
 
 Do not fail task if some failed
 
+#### reporter
+Type: `String`  
+Values: "console" | "teamcity"  
+Default: "console"  
+
+Name of reporter to use. By default plugin will report progress to console (via `grunt.log`).
+
+Specify "teamcity" for usage of a reporter which uses [TeamCity syntax](https://confluence.jetbrains.com/display/TCD10/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-ReportingTests).
+
+#### verbose
+Type: `Boolean`  
+Default: `true`  
+
+Use `false` to more concise output (only module start/end and test pass/fail result will be logged).
 
 ### Usage examples
 
@@ -251,16 +269,18 @@ grunt.initConfig({
 #### Events and reporting
 [QUnit callback](http://api.qunitjs.com/category/callbacks/) methods and arguments are also emitted through grunt's event system so that you may build custom reporting tools. Please refer to the QUnit documentation for more information.
 
-The events (with arguments) are as follows:
+The events are as follows :
 
 * `qunit.begin`
-* `qunit.moduleStart`: name
-* `qunit.testStart`: name
-* `qunit.log`: result, message, source
-* `qunit.testDone`: name, failed, passed, total
-* `qunit.moduleDone`: name, failed, passed, total
-* `qunit.done`: failed, passed, total, runtime
-* `qunit.coverage`: coverage
+* `qunit.moduleStart`
+* `qunit.testStart`
+* `qunit.log`
+* `qunit.testDone`
+* `qunit.moduleDone`
+* `qunit.done`
+* `qunit.coverage`
+
+Starting with v1.0 events arguments are the same in QUnit callbacks.
 
 In addition to QUnit callback-named events, the following event is emitted when [PhantomJS][] is spawned for a test:
 
@@ -299,7 +319,9 @@ The event `qunit.coverage` allows using [Istanbul][] code coverage library. See 
 
 
 
-## Code coverage (via Istanbul) tasks (coverageInstrument, coverageReport)
+## Code coverage tasks
+
+The module contains Grunt tasks `coverageInstrument`, `coverageReport` for code coverage via [Istanbul][].
 
 When you have loaded the plugin (via `grunt.loadNpmTasks`) you have some tasks available besides `qunit`. These tasks are for creating code coverage reports using [Istanbul][]:  
 
@@ -308,13 +330,15 @@ When you have loaded the plugin (via `grunt.loadNpmTasks`) you have some tasks a
 
 [Istanbul]: https://github.com/gotwarlost/istanbul/
 
-The plugin doesn't depend on Istanbul module directly. So it doesn't add additional dependency into your project if you arn't going to use code coverage with Istanbul.
+The plugin doesn't depend on Istanbul module directly. So it doesn't add additional dependency into your project if you aren't going to use code coverage with Istanbul.
 If you decide to use Istanbul for code coverage you will need to install Istanbul:
 `npm install istanbul --save-dev`.
 
-You should also install [grunt-contrib-connect][] and [serve-static][] in order to be able to generate the static web server that will allow you to execute the instrumented .js code in place of the original .js code: 
-`npm install grunt-contrib-connect--save-dev`
-`npm install serve-static--save-dev`
+You should also install [grunt-contrib-connect][] and [serve-static][] in order to be able to generate the static web server that will allow you to execute the instrumented .js code in place of the original .js code:
+``` 
+npm install grunt-contrib-connect serve-static --save-dev
+```
+
 [grunt-contrib-connect]: https://www.npmjs.com/package/grunt-contrib-connect
 [serve-static]: https://www.npmjs.com/package/serve-static
 
@@ -324,7 +348,8 @@ Code coverage tasks are supposed to be run in the following order: coverageInstr
 ### `coverageInstrument` task
 
 Task targets, files and options may be specified according to the grunt [Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
-Task's `src` specifies what files will be instrumented. Task's parameters should describe a set of `*.js` files. Task's `dest` property specifies a folder path where instrumented files will be saved (some kind of temporary folder). These instrumented files should be used during tests execution.   
+
+Task's `src` specifies what files will be instrumented. Task's parameters should describe a set of `*.js` files. Task's `dest` property specifies a folder path where instrumented files will be saved (some kind of temporary folder). These instrumented files should be used during tests execution.     
 The task `src-dest` mappings specification use standard [Grunt rules for files processing](http://gruntjs.com/configuring-tasks#files).
  
 #### src
@@ -351,17 +376,10 @@ If `autoBind` option is set then the task will automatically adds a handler for 
 
 In order to be able to substitute the original sources with the instrumented sources without having to modify the test files, one should create a webserver serving static content that can server the instrumented sources as the original one.
 
-The [grub-contrib-connect][] and [serve-static][] packages allow the on-the-fly creation of a local web server where the tests can be run and where the http://localhost:port/src will be associated with the instrumented local version of the sources files. The middleware functionnality of connect is exploited and a specific mountFolder function is used in order to associate the web server aliases with the local folders.  
+The `grub-contrib-connect` and `serve-static` packages allow the on-the-fly creation of a local web server where the tests can be run and where the http://localhost:port/src will be associated with the instrumented local version of the sources files. The middleware functionnality of connect is exploited and a specific mountFolder function is used in order to associate the web server aliases with the local folders.  
 
 ```js
-	function mountFolder (connect, alias, dir) {
-		//for grunt-contrib-connect 2.x
-		//return connect.static(alias,require('path').resolve(dir)); 
-		
-		//for grunt-contrib-connect 3.x
-		var local_dir=require('path').resolve(dir);         
-	        return connect().use("/"+alias,serveStatic(y));      //associate localhost:port/alias with local_dir
-	};
+  var serveStatic = require('serve-static');
 
 	grunt.initConfig({...,
 		connect: {
@@ -371,10 +389,10 @@ The [grub-contrib-connect][] and [serve-static][] packages allow the on-the-fly 
 					middleware: function (connect) {
 						return [
 							// instrumented sources first as "regular" sources
-							mountFolder(connect, 'src','.tmp'),
+							serveStatic('.tmp'),
 							// then test fixtures and libs
-							mountFolder(connect, 'test','tests'),
-							mountFolder(connect, 'libs','libs'),
+							serveStatic('tests'),
+							serveStatic('libs'),
 						];
 					}
 				}
@@ -388,8 +406,10 @@ Type: `Object`
 Required: no  
 
 The option allows to generade a AMD module with imports of all instrumented files. This is usefull for getting more accurate coverage reports. If an instrumeneted file wasn't loaded during tests execution then coverage report won't take it into account at all and you'll get falsy high numbers of coverage. 
+
 For getting correct numbers of code coverage you need to load all your  files during test execution. You can do it manually or allow `coverageInstrument` task to do it for you.
 The task supposes that all files are AMD-modules (e.g. loaded via [RequireJS](http://requirejs.org/) or the like). In your main module for tests you can import a stub like 'all-modules'. Then tell `coverageInstrument` task to replace the stub with generated module which will contain imports of all instrumented files.  
+
 For more info see examples below.  
   
 `generateModule` option is an object with properties:
@@ -402,6 +422,7 @@ Type: `Array`
 Required: no
 
 Generated AMD-module will contain imports of modules which names are relative to the module folder.
+
 For example if `generateModule.output` equals to `.tmp/all-modules.js` then all module names will relative to '.tmp' folder. It's supposed that instrumented files are put into the same folder (via `dest` option).
 
 
@@ -429,15 +450,7 @@ It doesn't make much sence to run tasks `coverageInstrument` and `coverageReport
 But they were designed specifically to be independent from `qunit` task to simplify re-using if you will.
 
 ```js
-
-	function mountFolder (connect, alias, dir) {
-		//for grunt-contrib-connect 2.x
-		//return connect.static(alias,require('path').resolve(dir)); 
-		
-		//for grunt-contrib-connect 3.x
-		var local_dir=require('path').resolve(dir);         
-	        return connect().use("/"+alias,serveStatic(y));      //associate localhost:port/alias with local_dir
-	};
+  var serveStatic = require('serve-static');
 
 	grunt.initConfig({
 		qunit:{
@@ -459,11 +472,11 @@ But they were designed specifically to be independent from `qunit` task to simpl
 					middleware: function (connect) {
 						return [
 							// instrumented sources first as real src through alias usage
-							mountFolder(connect, 'src','.tmp'),
+							serveStatic('.tmp'),
 							// then test fixtures and helpers
-							mountFolder(connect, 'tests','tests'),
+							serveStatic('tests'),
 							// other libs
-							mountFolder(connect, 'lib','lib')
+							serveStatic('lib')
 						];
 					}
 				}
@@ -544,6 +557,7 @@ define([], function () {});
 ```
 
 ## Release History
+ * 2016-12-07 v1.0.0  Added reporters (console/teamcity), changed events arguments (QUnit 2.0 support)
  * 2016-06-23	v0.4.0	Added 'force' option for 'qunit' task
  * 2016-02-21	v0.3.2	Support Grunt 1.0
  * 2015-09-02	v0.3.1	Support multiple URLs for coverage (converage reports are merged)

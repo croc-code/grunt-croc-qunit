@@ -1,6 +1,14 @@
 /*
+ * @overview
  * grunt-croc-qunit
+ * Script to control PhantomJS for QUnut tests execution.
+ * Exprect arguments:
+ *		- file path to a temporary writable file (for adding messages)
+ *		- url to open in PhantomJS
+ *		- string of json arguments for PhantomJS
  *
+ * @copyright
+ * Copyright (c) 2013-2016 CROC Inc., Sergei Dorogin
  * Copyright (c) 2012 "Cowboy" Ben Alman, contributors
  * Licensed under the MIT license.
  */
@@ -75,33 +83,33 @@ page.onAlert = function(str) {
   try {
     sendMessage(JSON.parse(str));
   } catch(err) {
-    sendMessage('error.invalidJSON', str);
+    sendMessage('page.error.invalidJSON', str);
   }
 };
 
 // Relay console logging messages.
 page.onConsoleMessage = function(message) {
-  sendMessage('console', message);
+  sendMessage('page.console', message);
 };
 
 // For debugging.
 page.onResourceRequested = function(request) {
-  sendMessage('onResourceRequested', request.url);
+  sendMessage('page.resourceRequested', request.url);
 };
 
 page.onResourceReceived = function(request) {
   if (request.stage === 'end') {
-    sendMessage('onResourceReceived', request.url);
+    sendMessage('page.resourceReceived', request.url);
   }
 };
 
 page.onError = function(msg, trace) {
-  sendMessage('error.onError', msg, trace);
+  sendMessage('page.error', msg, trace);
 };
 
 // Run before the page is loaded.
 page.onInitialized = function() {
-  sendMessage('onInitialized');
+  sendMessage('page.initialized');
   // Abort if there is no bridge to inject.
   if (!options.inject) { return; }
   // Tell the client that when DOMContentLoaded fires, it needs to tell this
@@ -121,7 +129,7 @@ page.onLoadFinished = function(status) {
   sendMessage('onLoadFinished', status);
   if (status !== 'success') {
     // File loading failure.
-    sendMessage('fail.load', url);
+    sendMessage('page.load.fail', url);
     phantom.exit();
   }
 };

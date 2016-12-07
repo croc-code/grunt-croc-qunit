@@ -41,6 +41,7 @@ module.exports = function(grunt) {
     qunit: {
       options: {
           phantomPath: require('phantomjs').path
+          //verbose: false
       },
       all_tests: ['test/*{1,2}.html'],
       individual_tests: {
@@ -145,7 +146,9 @@ module.exports = function(grunt) {
     currentUrl = url;
     if (!successes[currentUrl]) { successes[currentUrl] = 0; }
   });
-  grunt.event.on('qunit.done', function(failed, passed) {
+  grunt.event.on('qunit.done', function(details) {
+    var failed = details.failed, 
+        passed = details.passed;
     if (failed === 0 && passed === 2) { successes[currentUrl]++; }
   });
 
