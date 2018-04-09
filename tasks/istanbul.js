@@ -81,15 +81,15 @@ module.exports = function(grunt) {
 		// bind to 'qunit' task's event to capture coverage info
 		if (options.autoBind) {
 			var coverageFilePath = path.join(dest, 'coverage.json');
-			grunt.config('qunit.options.eventHandlers', {
-				'qunit.coverage': function (coverage) {
+			let handlers = grunt.config('qunit.options.eventHandlers') || {};
+			handlers["qunit.coverage"] = function (coverage) {
 					if (fs.existsSync(coverageFilePath)) {
 						var oldCover = grunt.file.readJSON(coverageFilePath);
 						coverage = mergeReports(oldCover, coverage);
 					}					
 					grunt.file.write(coverageFilePath, JSON.stringify(coverage));
-				}
-			});
+				};
+			grunt.config('qunit.options.eventHandlers', handlers);
 			grunt.config('coverageReport.options.coverageFile', coverageFilePath);
 			grunt.log.writeln('Autobinded to QUnit, coverage report will be saved into ' + coverageFilePath.cyan);
 		}

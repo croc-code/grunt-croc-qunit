@@ -1,7 +1,7 @@
 {
   "name": "grunt-croc-qunit",
   "description": "Run QUnit unit tests in headless PhantomJS with code coverage support via Istanbul. Despite grunt-contrib-qunit it has no direct dependency on phantomjs module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/CrocInc/grunt-croc-qunit",
   "author": {
     "name": "Sergei Dorogin",
@@ -14,12 +14,7 @@
   "bugs": {
     "url": "https://github.com/CrocInc/grunt-croc-qunit/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/CrocInc/grunt-croc-qunit/blob/master/LICENSE-MIT"
-    }
-  ],
+  "license": "MIT",
   "main": "Gruntfile.js",
   "scripts": {
     "test": "grunt"

@@ -181,6 +181,7 @@ exports.init = function(grunt) {
 
     grunt.log.debug(JSON.stringify(args));
     grunt.verbose.writeln('Starting ' + binPath);
+    grunt.verbose.writeln("Tempfile: " + tempfile.path);
     // Actually spawn PhantomJS.
     return grunt.util.spawn({
       cmd: binPath,

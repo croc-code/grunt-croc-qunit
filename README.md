@@ -557,7 +557,8 @@ define([], function () {});
 ```
 
 ## Release History
- * 2016-12-07 v1.0.0  Added reporters (console/teamcity), changed events arguments (QUnit 2.0 support)
+ * 2018-04-09	v1.0.1  Fixed: `coverageInstrument` task was incorrectly overriding `qunit.options.eventHandlers`
+ * 2016-12-07	v1.0.0  Added reporters (console/teamcity), changed events arguments (QUnit 2.0 support)
  * 2016-06-23	v0.4.0	Added 'force' option for 'qunit' task
  * 2016-02-21	v0.3.2	Support Grunt 1.0
  * 2015-09-02	v0.3.1	Support multiple URLs for coverage (converage reports are merged)
