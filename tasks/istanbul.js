@@ -81,7 +81,7 @@ module.exports = function(grunt) {
 		// bind to 'qunit' task's event to capture coverage info
 		if (options.autoBind) {
 			var coverageFilePath = path.join(dest, 'coverage.json');
-			let handlers = grunt.config('qunit.options.eventHandlers') || {};
+			var handlers = grunt.config('qunit.options.eventHandlers') || {};
 			handlers["qunit.coverage"] = function (coverage) {
 					if (fs.existsSync(coverageFilePath)) {
 						var oldCover = grunt.file.readJSON(coverageFilePath);
