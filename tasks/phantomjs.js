@@ -72,7 +72,13 @@ exports.init = function(grunt) {
     // All done? Clean up!
     var cleanup = function() {
       clearTimeout(id);
-      tempfile.unlink();
+      try {
+        // node.js < v10
+        tempfile.unlink();
+      } catch(e) {
+        // node.js >= v10
+        tempfile.unlinkSync();
+      }
     };
 
     // Internal methods.
