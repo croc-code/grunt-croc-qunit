@@ -557,6 +557,7 @@ define([], function () {});
 ```
 
 ## Release History
+ * 2019-11-06	v1.0.2  Fixed: fix cleanup for phantomjs. Make it work on node > v10   
  * 2018-04-09	v1.0.1  Fixed: `coverageInstrument` task was incorrectly overriding `qunit.options.eventHandlers`
  * 2016-12-07	v1.0.0  Added reporters (console/teamcity), changed events arguments (QUnit 2.0 support)
  * 2016-06-23	v0.4.0	Added 'force' option for 'qunit' task
